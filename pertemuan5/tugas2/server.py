@@ -20,12 +20,31 @@ def clientthread(conn,addr):
             message = conn.recv(2048).decode()
             if message:
                 print(list_of_username[conn]+">"+message)
-                message_to_send = list_of_username[conn]+">"+message
-                broadcast(message_to_send, conn)
+                if message[:4] == "list":
+                    sendToClient(str(list_of_username.values()), conn)
+                elif message[:7] == "private":
+                    key_list = list(list_of_username.keys())
+                    val_list = list(list_of_username.values())
+                    a = message.split(" ")
+                    pos = val_list.index(a[1])
+                    sendToClient(str(a[2:]), key_list[pos])
+                else:
+                    message_to_send = list_of_username[conn]+">"+message
+                    broadcast(message_to_send, conn)
             else:
                 remove(conn)
         except:
             continue
+
+def sendToClient(message:str,connection):
+    for clients in list_of_client:
+        if clients == connection:
+            print(message)
+            try:
+                clients.send(message.encode())
+            except:
+                clients.close()
+                remove(clients)
 
 def broadcast(message, connection):
     for clients in list_of_client:
