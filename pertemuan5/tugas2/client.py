@@ -10,10 +10,10 @@ server.connect((ip_address,port))
 
 def send_msg(sock):
     while True:
-        sys.stdout.write('You>')
         data = sys.stdin.readline()
         sock.send(data.encode())
         sys.stdout.flush()
+        sys.stdout.write(sock.recv(2048).decode())
 
 def recv_msg(sock):
     while True:

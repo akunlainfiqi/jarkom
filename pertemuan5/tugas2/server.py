@@ -30,6 +30,7 @@ def clientthread(conn,addr):
                     sendToClient(str(a[2:]), key_list[pos])
                 else:
                     message_to_send = list_of_username[conn]+">"+message
+                    sendToClient("you>",conn)
                     broadcast(message_to_send, conn)
             else:
                 remove(conn)
