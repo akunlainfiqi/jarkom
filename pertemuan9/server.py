@@ -13,7 +13,7 @@ server_sock.listen(1000)
 
 input_socket = [server_sock]
 
-def generate_headers(response_code):
+def generate_headers(response_code,content_length):
         header = ''
         if response_code == 200:
             header += 'HTTP/1.1 200 OK\r\n'
@@ -23,7 +23,8 @@ def generate_headers(response_code):
         time_now = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
         header += 'Date: {now}\r\n'.format(now=time_now)
         header += 'Server: Simple-Python-Server\r\n'
-        header += 'Connection: close\r\n\r\n' # Signal that connection will be closed after completing the request
+        header += 'Content-Length:'+str(content_length)+'\r\n\r\n'
+        # header += 'Connection: close\r\n\r\n' # Signal that connection will be closed after completing the request
         return header
 
 def return_list_html(arr:list,d:str):
@@ -67,7 +68,6 @@ def list_files(d:str):
     arr = os.listdir(d)
     response_data = ''
     f = open('list.html', 'w')
-    # prev = ''.join([str(e) for e in d.split('/')[:len(d.split('/'))-1]])+"/"
     html = return_list_html(arr,d)
     f.write(textwrap.dedent(html))
     f.close()
@@ -107,10 +107,10 @@ try :
                     else :
                         response_header, response_data = list_files(".")
                 else:
-                    is_exists = os.path.exists(request_file.split('/')[1])
+                    is_exists = os.path.exists(request_file[1:])
                     if is_exists == False:
-                        response_header = generate_headers(404)
                         response_data = '<html><body><center><h1>Error 404: File not found</h1></center><p>Head back to <a href="/">dry land</a>.</p></body></html>'
+                        response_header = generate_headers(404,len(response_data))
                     else:
                         if os.path.isdir(request_file[1:]):
                             response_header, response_data = list_files(request_file[1:])
@@ -120,7 +120,6 @@ try :
                             g.close()
                             content_length = len(response_data)
                             response_header = 'HTTP/1.1 200 OK \r\n Content-Type: text/html; charset=UTF-8\r\nContent-Length:'+str(content_length)+'\r\n\r\n'
-                    print(is_exists)
                 sock.send((response_header + response_data).encode())
 
 except KeyboardInterrupt:
